@@ -1,0 +1,76 @@
+# 🚀 Jenkins RAG Application  
+_Your complete end-to-end Retrieval-Augmented Generation system for Jenkins builds._
+
+This project collects Jenkins build data, converts it into embeddings, stores it inside a FAISS vector database, and exposes a **Flask API** that answers questions using a **local LLM (Qwen 0.5B)**.
+
+---
+
+## 📂 Project Structure
+
+project/
+│── collector.py # Pulls Jenkins build info → JSONL
+│── build_rag.py # Builds FAISS index + metadata
+│── query_rag.py # CLI testing for RAG answers
+│── app.py # Flask API (RAG backend)
+│── data/
+│ └── jenkins_data.jsonl
+│── rag_store/
+│ ├── faiss.index
+│ └── metadata.json
+│── README.mdx
+
+
+---
+
+Install Dependencies
+
+Run:
+
+```bash
+pip install flask faiss-cpu sentence-transformers transformers requests
+
+Step 1 — Run Jenkins Collector
+
+This script connects to your Jenkins server, fetches build logs, and appends them into:
+
+data/jenkins_data.jsonl
+
+Run:
+
+python collector.py
+
+It will:
+
+    Continuously check Jenkins every 10 seconds
+
+    Detect new builds only
+
+    Append clean text + raw JSON for each build
+
+    You must have Jenkins running at the configured URL inside collector.py.
+
+Step 2 — Build the FAISS Vector Store
+
+python build_rag.py
+
+This:
+
+    Reads all JSON records
+
+    Embeds them with all-MiniLM-L6-v2
+
+    Creates faiss.index
+
+    Saves metadata to rag_store/metadata.json
+
+When complete:
+
+RAG index built successfully!
+
+Step 3 — Start the Flask API Server
+
+python app.py
+
+The API runs on:
+
+http://localhost:5000
